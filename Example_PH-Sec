@@ -1,0 +1,16 @@
+local Library = loadstring(game:HttpGet("https://pastefy.app/8jr7j33t/raw?part=addon.lua"))()
+
+local Window = Library:Window("My GUI")
+local Tab = Window:Tab("Main")
+
+Tab:Button("Click Me", function()
+    print("Button clicked!")
+end)
+
+Tab:Toggle("Enable Feature", function(state)
+    print("Toggle is now:", state)
+end)
+
+Tab:Slider("Volume", 0, 100, 50, function(value)
+    print("Volume set to:", value)
+end)
