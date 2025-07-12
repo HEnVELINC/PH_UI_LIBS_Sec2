@@ -1,255 +1,280 @@
--- Load the UI Library
-local Library = loadstring(game:HttpGet("https://pastefy.app/8jr7j33t/raw?part=addon.lua"))()
+-- Example usage of the Black & Red UI Library
+-- This demonstrates how to create a complete GUI with multiple tabs and components
+
+-- First, load the library (assuming it's in a ModuleScript)
+local VenLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/HEnVELINC/PH_UI_LIBS_Sec2/refs/heads/main/Source_HEnVELINC"))()
 
 -- Create the main window
-local Window = Library:Window("Example GUI")
+local Window = VenLib:Window("My Game Hub")
 
--- Create multiple tabs to organize components
-local MainTab = Window:Tab("Main Features")
+-- Create tabs for different categories
+local MainTab = Window:Tab("Main")
 local SettingsTab = Window:Tab("Settings")
-local UtilsTab = Window:Tab("Utilities")
+local PlayerTab = Window:Tab("Player")
+local MiscTab = Window:Tab("Misc")
 
--- ============================================
--- MAIN TAB - Core Features
--- ============================================
-
--- Button Examples
-MainTab:Button("Print Hello World", function()
-    print("Hello World from GUI!")
+-- MAIN TAB - Core functionality
+MainTab:Button("Auto Farm", function()
+    print("Auto Farm toggled!")
+    -- Add your auto farm logic here
+    game.StarterGui:SetCore("SendNotification", {
+        Title = "Auto Farm";
+        Text = "Auto Farm has been activated!";
+        Duration = 3;
+    })
 end)
 
-MainTab:Button("Get Player Info", function()
-    local player = game.Players.LocalPlayer
-    print("Player Name: " .. player.Name)
-    print("Player ID: " .. player.UserId)
+MainTab:Button("Collect All Items", function()
+    print("Collecting all items...")
+    -- Add item collection logic here
+    for i = 1, 10 do
+        print("Collecting item " .. i)
+        wait(0.1)
+    end
+    print("All items collected!")
 end)
 
-MainTab:Button("Teleport to Spawn", function()
-    local player = game.Players.LocalPlayer
-    if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-        player.Character.HumanoidRootPart.CFrame = CFrame.new(0, 10, 0)
-        print("Teleported to spawn!")
+local autoFarmEnabled = false
+MainTab:Toggle("Enable Auto Farm", function(state)
+    autoFarmEnabled = state
+    print("Auto Farm is now: " .. (state and "ON" or "OFF"))
+    
+    if state then
+        spawn(function()
+            while autoFarmEnabled do
+                -- Your auto farm loop here
+                print("Auto farming...")
+                wait(1)
+            end
+        end)
     end
 end)
 
--- Toggle Examples
-MainTab:Toggle("God Mode", function(enabled)
-    local player = game.Players.LocalPlayer
-    if player.Character and player.Character:FindFirstChild("Humanoid") then
-        if enabled then
-            player.Character.Humanoid.MaxHealth = math.huge
-            player.Character.Humanoid.Health = math.huge
-            print("God Mode: ON")
-        else
-            player.Character.Humanoid.MaxHealth = 100
-            player.Character.Humanoid.Health = 100
-            print("God Mode: OFF")
-        end
-    end
+MainTab:Toggle("Auto Collect Coins", function(state)
+    print("Auto Collect Coins: " .. (state and "ON" or "OFF"))
+    -- Add coin collection logic here
 end)
 
-MainTab:Toggle("Fly Mode", function(enabled)
-    local player = game.Players.LocalPlayer
-    if enabled then
-        -- Simple fly implementation would go here
-        print("Fly Mode: ENABLED")
-    else
-        print("Fly Mode: DISABLED")
-    end
-end)
-
-MainTab:Toggle("Noclip", function(enabled)
-    local player = game.Players.LocalPlayer
-    if enabled then
-        -- Noclip implementation would go here
-        print("Noclip: ON")
-    else
-        print("Noclip: OFF")
-    end
-end)
-
--- ============================================
--- SETTINGS TAB - Configuration Options
--- ============================================
-
--- Slider Examples
-SettingsTab:Slider("Walk Speed", 0, 100, 16, function(value)
-    local player = game.Players.LocalPlayer
-    if player.Character and player.Character:FindFirstChild("Humanoid") then
-        player.Character.Humanoid.WalkSpeed = value
+-- SETTINGS TAB - Configuration options
+SettingsTab:Slider("Walk Speed", 16, 100, 16, function(value)
+    if game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("Humanoid") then
+        game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = value
         print("Walk Speed set to: " .. value)
     end
 end)
 
-SettingsTab:Slider("Jump Power", 0, 200, 50, function(value)
-    local player = game.Players.LocalPlayer
-    if player.Character and player.Character:FindFirstChild("Humanoid") then
-        player.Character.Humanoid.JumpPower = value
+SettingsTab:Slider("Jump Power", 50, 200, 50, function(value)
+    if game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("Humanoid") then
+        game.Players.LocalPlayer.Character.Humanoid.JumpPower = value
         print("Jump Power set to: " .. value)
     end
 end)
 
-SettingsTab:Slider("Field of View", 50, 120, 70, function(value)
-    local camera = workspace.CurrentCamera
-    camera.FieldOfView = value
-    print("FOV set to: " .. value)
+SettingsTab:Slider("Field of View", 70, 120, 70, function(value)
+    if game.Workspace.CurrentCamera then
+        game.Workspace.CurrentCamera.FieldOfView = value
+        print("FOV set to: " .. value)
+    end
 end)
 
--- Dropdown Examples
-SettingsTab:Dropdown("Select Team", {"Red Team", "Blue Team", "Green Team", "Yellow Team"}, function(selected)
-    print("Selected team: " .. selected)
-    -- Team switching logic would go here
+-- Dropdown for game modes or locations
+local locations = {"Spawn", "Forest", "Mountain", "Beach", "Castle", "Dungeon"}
+SettingsTab:Dropdown("Teleport Location", locations, function(selected)
+    print("Selected location: " .. selected)
+    -- Add teleportation logic here
+    game.StarterGui:SetCore("SendNotification", {
+        Title = "Teleport";
+        Text = "Teleported to " .. selected;
+        Duration = 2;
+    })
 end)
 
-SettingsTab:Dropdown("Teleport Location", {
-    "Spawn",
-    "Shop",
-    "Arena",
-    "Secret Area",
-    "Boss Room"
-}, function(location)
-    print("Teleporting to: " .. location)
+-- PLAYER TAB - Player-specific features
+PlayerTab:Button("Reset Character", function()
+    if game.Players.LocalPlayer.Character then
+        game.Players.LocalPlayer.Character:BreakJoints()
+    end
+end)
+
+PlayerTab:Button("Respawn", function()
+    game.Players.LocalPlayer:LoadCharacter()
+end)
+
+PlayerTab:Toggle("Infinite Health", function(state)
+    print("Infinite Health: " .. (state and "ON" or "OFF"))
+    if state then
+        spawn(function()
+            while state do
+                if game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("Humanoid") then
+                    game.Players.LocalPlayer.Character.Humanoid.Health = game.Players.LocalPlayer.Character.Humanoid.MaxHealth
+                end
+                wait(0.1)
+            end
+        end)
+    end
+end)
+
+PlayerTab:Toggle("No Clip", function(state)
+    print("No Clip: " .. (state and "ON" or "OFF"))
     local player = game.Players.LocalPlayer
-    if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-        -- Predefined locations
-        local locations = {
-            ["Spawn"] = CFrame.new(0, 10, 0),
-            ["Shop"] = CFrame.new(100, 10, 0),
-            ["Arena"] = CFrame.new(0, 10, 100),
-            ["Secret Area"] = CFrame.new(-100, 50, -100),
-            ["Boss Room"] = CFrame.new(0, 100, 0)
-        }
-        
-        if locations[location] then
-            player.Character.HumanoidRootPart.CFrame = locations[location]
-            print("Teleported to " .. location)
+    
+    if state then
+        spawn(function()
+            while state do
+                if player.Character then
+                    for _, part in pairs(player.Character:GetChildren()) do
+                        if part:IsA("BasePart") then
+                            part.CanCollide = false
+                        end
+                    end
+                end
+                wait(0.1)
+            end
+        end)
+    else
+        if player.Character then
+            for _, part in pairs(player.Character:GetChildren()) do
+                if part:IsA("BasePart") and part.Name ~= "HumanoidRootPart" then
+                    part.CanCollide = true
+                end
+            end
         end
     end
 end)
 
-SettingsTab:Dropdown("Graphics Quality", {"Low", "Medium", "High", "Ultra"}, function(quality)
-    print("Graphics Quality set to: " .. quality)
-    -- Graphics settings would be applied here
-end)
-
--- ============================================
--- UTILITIES TAB - Tools and Misc Features
--- ============================================
-
--- Textbox Examples
-UtilsTab:Textbox("Player Name", true, function(input)
-    print("Searching for player: " .. input)
-    local targetPlayer = game.Players:FindFirstChild(input)
+-- Player name input
+PlayerTab:Textbox("Target Player Name", true, function(playerName)
+    print("Target player set to: " .. playerName)
+    -- Add logic to target specific player
+    local targetPlayer = game.Players:FindFirstChild(playerName)
     if targetPlayer then
         print("Found player: " .. targetPlayer.Name)
+        game.StarterGui:SetCore("SendNotification", {
+            Title = "Target Set";
+            Text = "Now targeting: " .. targetPlayer.Name;
+            Duration = 3;
+        })
     else
-        print("Player not found!")
+        print("Player not found: " .. playerName)
     end
 end)
 
-UtilsTab:Textbox("Chat Message", true, function(message)
-    print("Broadcasting: " .. message)
-    -- Chat message would be sent here
+-- MISC TAB - Additional features
+MiscTab:Button("Full Bright", function()
+    local lighting = game:GetService("Lighting")
+    lighting.Brightness = 2
+    lighting.ClockTime = 14
+    lighting.FogEnd = 100000
+    lighting.GlobalShadows = false
+    lighting.OutdoorAmbient = Color3.fromRGB(128, 128, 128)
+    print("Full Bright enabled!")
 end)
 
-UtilsTab:Textbox("Custom Speed", false, function(speed)
-    local speedValue = tonumber(speed)
-    if speedValue then
-        local player = game.Players.LocalPlayer
-        if player.Character and player.Character:FindFirstChild("Humanoid") then
-            player.Character.Humanoid.WalkSpeed = speedValue
-            print("Custom speed set to: " .. speedValue)
+MiscTab:Button("Restore Lighting", function()
+    local lighting = game:GetService("Lighting")
+    lighting.Brightness = 1
+    lighting.ClockTime = 12
+    lighting.FogEnd = 100000
+    lighting.GlobalShadows = true
+    lighting.OutdoorAmbient = Color3.fromRGB(70, 70, 70)
+    print("Lighting restored!")
+end)
+
+-- ESP Toggle
+MiscTab:Toggle("ESP Players", function(state)
+    print("ESP Players: " .. (state and "ON" or "OFF"))
+    -- Add ESP logic here
+    if state then
+        -- Enable ESP for all players
+        for _, player in pairs(game.Players:GetPlayers()) do
+            if player ~= game.Players.LocalPlayer and player.Character then
+                -- Add ESP highlighting logic
+                print("Adding ESP for: " .. player.Name)
+            end
         end
     else
-        print("Invalid speed value!")
+        -- Disable ESP
+        print("Disabling ESP for all players")
     end
 end)
 
--- More Utility Buttons
-UtilsTab:Button("Reset Character", function()
-    local player = game.Players.LocalPlayer
-    if player.Character then
-        player.Character:BreakJoints()
-        print("Character reset!")
+-- Chat spam textbox
+MiscTab:Textbox("Chat Message", false, function(message)
+    print("Chat message set to: " .. message)
+    -- Add chat spam logic here
+    game.ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer(message, "All")
+end)
+
+-- Dropdown for different ESP types
+local espTypes = {"Players", "Items", "NPCs", "Chests", "All"}
+MiscTab:Dropdown("ESP Type", espTypes, function(selected)
+    print("ESP Type selected: " .. selected)
+    -- Add logic to change ESP type
+end)
+
+-- Anti-AFK toggle
+MiscTab:Toggle("Anti-AFK", function(state)
+    print("Anti-AFK: " .. (state and "ON" or "OFF"))
+    if state then
+        spawn(function()
+            while state do
+                game:GetService("VirtualUser"):CaptureController()
+                game:GetService("VirtualUser"):ClickButton2(Vector2.new())
+                wait(60) -- Click every minute
+            end
+        end)
     end
 end)
 
-UtilsTab:Button("Get All Players", function()
-    print("=== PLAYER LIST ===")
-    for _, player in pairs(game.Players:GetPlayers()) do
-        print(player.Name .. " (ID: " .. player.UserId .. ")")
+-- Server hop button
+MiscTab:Button("Server Hop", function()
+    print("Server hopping...")
+    local TeleportService = game:GetService("TeleportService")
+    local Players = game:GetService("Players")
+    
+    TeleportService:Teleport(game.PlaceId, Players.LocalPlayer)
+end)
+
+-- Rejoin button
+MiscTab:Button("Rejoin Server", function()
+    print("Rejoining server...")
+    local TeleportService = game:GetService("TeleportService")
+    local Players = game:GetService("Players")
+    
+    TeleportService:TeleportToPlaceInstance(game.PlaceId, game.JobId, Players.LocalPlayer)
+end)
+
+-- Add a slider for transparency
+MiscTab:Slider("GUI Transparency", 0, 90, 0, function(value)
+    -- Make the GUI semi-transparent
+    local transparency = value / 100
+    for _, gui in pairs(game.Players.LocalPlayer.PlayerGui:GetChildren()) do
+        if gui.Name == "VenLib" then
+            for _, frame in pairs(gui:GetDescendants()) do
+                if frame:IsA("Frame") or frame:IsA("TextLabel") or frame:IsA("TextButton") then
+                    if frame.BackgroundTransparency < 1 then
+                        frame.BackgroundTransparency = transparency
+                    end
+                end
+            end
+        end
     end
-    print("=== END LIST ===")
+    print("GUI Transparency set to: " .. value .. "%")
 end)
 
-UtilsTab:Button("Server Info", function()
-    print("=== SERVER INFO ===")
-    print("Players Online: " .. #game.Players:GetPlayers())
-    print("Place ID: " .. game.PlaceId)
-    print("Job ID: " .. game.JobId)
-    print("==================")
-end)
+-- Notification when script loads
+wait(1)
+game.StarterGui:SetCore("SendNotification", {
+    Title = "UI Library Loaded";
+    Text = "All features are now available!";
+    Duration = 5;
+})
 
--- Advanced Toggle Examples
-UtilsTab:Toggle("Auto-Collect Items", function(enabled)
-    if enabled then
-        print("Auto-collect started!")
-        -- Auto-collect logic would go here
-    else
-        print("Auto-collect stopped!")
-    end
-end)
-
-UtilsTab:Toggle("ESP (Show Players)", function(enabled)
-    if enabled then
-        print("ESP enabled - showing all players")
-        -- ESP implementation would go here
-    else
-        print("ESP disabled")
-    end
-end)
-
--- Advanced Dropdown
-UtilsTab:Dropdown("Game Mode", {
-    "Survival",
-    "Creative",
-    "Adventure",
-    "Spectator",
-    "Hardcore"
-}, function(mode)
-    print("Game mode changed to: " .. mode)
-    -- Game mode logic would go here
-end)
-
--- Specialized Sliders
-UtilsTab:Slider("Gravity", 0, 300, 196, function(value)
-    workspace.Gravity = value
-    print("Gravity set to: " .. value)
-end)
-
-UtilsTab:Slider("Time Scale", 0.1, 5, 1, function(value)
-    -- This would affect game time speed if implemented
-    print("Time scale set to: " .. value)
-end)
-
--- Final utility textbox
-UtilsTab:Textbox("Execute Command", true, function(command)
-    print("Executing command: " .. command)
-    -- Command execution logic would go here
-    if command:lower() == "help" then
-        print("Available commands: help, clear, info, reset")
-    elseif command:lower() == "clear" then
-        print("Console cleared!")
-    elseif command:lower() == "info" then
-        print("GUI Version: 1.0")
-        print("Created by: Your Name")
-    elseif command:lower() == "reset" then
-        print("Resetting all settings...")
-    else
-        print("Unknown command. Type 'help' for available commands.")
-    end
-end)
-
--- Confirmation message
-print("GUI loaded successfully!")
-print("All components are ready to use!")
+print("UI Library example loaded successfully!")
+print("Features available:")
+print("- Auto Farm with toggle")
+print("- Speed/Jump/FOV sliders")
+print("- Teleport locations")
+print("- Player modifications")
+print("- ESP and visual enhancements")
+print("- Anti-AFK and server utilities")
