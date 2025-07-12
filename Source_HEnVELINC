@@ -1,10 +1,11 @@
--- UI Library with Black & Red Theme (Compact Version)
+-- UI Library with Black & Red Theme (Fixed Version)
 local TweenService = game:GetService("TweenService")
 local UIS = game:GetService("UserInputService")
+local Players = game:GetService("Players")
 
 local function ripple(obj)
 	spawn(function()
-		local Mouse = game.Players.LocalPlayer:GetMouse()
+		local Mouse = Players.LocalPlayer:GetMouse()
 		local Circle = Instance.new("ImageLabel")
 		Circle.Name = "Circle"
 		Circle.Parent = obj
@@ -57,9 +58,11 @@ local lib = {}
 function lib:Window(text)
 	local ft, vistab, mini = false, true, false
 	
+	-- Fix 1: Use ResetOnSpawn = false to prevent GUI from disappearing when character dies
 	local VenLib = Instance.new("ScreenGui")
 	VenLib.Name = "VenLib"
-	VenLib.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+	VenLib.ResetOnSpawn = false -- This prevents the GUI from disappearing on death
+	VenLib.Parent = Players.LocalPlayer:WaitForChild("PlayerGui")
 	
 	local mainframe = Instance.new("Frame")
 	mainframe.Name = "mainframe"
@@ -283,6 +286,7 @@ function lib:Window(text)
 			container.CanvasSize = UDim2.new(0, 0, 0, containerlist.AbsoluteContentSize.Y + 10)
 		end
 		
+		-- Fix 2: Fixed slider functionality
 		function tab:Slider(text, min, max, start, callback)
 			callback = callback or function() end
 			local dragging = false
@@ -322,7 +326,7 @@ function lib:Window(text)
 			slideframe.Parent = placetoslide
 			slideframe.BackgroundColor3 = Color3.fromRGB(220, 20, 60)
 			slideframe.BorderSizePixel = 0
-			slideframe.Size = UDim2.new((start or 0) / max, 0, 1, 0)
+			slideframe.Size = UDim2.new((start or min) / max, 0, 1, 0)
 			
 			local value = Instance.new("TextLabel")
 			value.Name = "value"
@@ -330,14 +334,15 @@ function lib:Window(text)
 			value.BackgroundTransparency = 1
 			value.Size = UDim2.new(1, 0, 1, 0)
 			value.Font = Enum.Font.Gotham
-			value.Text = tostring(start and math.floor((start / max) * (max - min) + min) or 0)
+			value.Text = tostring(start or min)
 			value.TextColor3 = Color3.fromRGB(255, 255, 255)
 			value.TextSize = 14
 			
 			local function slide(input)
-				local pos = UDim2.new(math.clamp((input.Position.X - placetoslide.AbsolutePosition.X) / placetoslide.AbsoluteSize.X, 0, 1), 0, 1, 0)
-				slideframe:TweenSize(pos, Enum.EasingDirection.Out, Enum.EasingStyle.Quad, 0.2, true)
-				local s = math.floor(((pos.X.Scale * max) / max) * (max - min) + min)
+				local pos = math.clamp((input.Position.X - placetoslide.AbsolutePosition.X) / placetoslide.AbsoluteSize.X, 0, 1)
+				local newSize = UDim2.new(pos, 0, 1, 0)
+				slideframe:TweenSize(newSize, Enum.EasingDirection.Out, Enum.EasingStyle.Quad, 0.1, true)
+				local s = math.floor(pos * (max - min) + min)
 				value.Text = tostring(s)
 				callback(s)
 			end
@@ -364,24 +369,31 @@ function lib:Window(text)
 			container.CanvasSize = UDim2.new(0, 0, 0, containerlist.AbsoluteContentSize.Y + 10)
 		end
 		
+		-- Fix 3: Fixed dropdown functionality
 		function tab:Dropdown(text, list, callback)
 			list = list or {}
 			callback = callback or function() end
 			local d = false
 			
-			local dropdown = Instance.new("TextButton")
+			local dropdown = Instance.new("Frame")
 			dropdown.Name = "dropdown"
 			dropdown.Parent = container
-			dropdown.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-			dropdown.BorderSizePixel = 0
+			dropdown.BackgroundTransparency = 1
 			dropdown.Size = UDim2.new(0, 200, 0, 30)
-			dropdown.AutoButtonColor = false
-			dropdown.Text = ""
 			dropdown.ClipsDescendants = false
+			
+			local dropdownbtn = Instance.new("TextButton")
+			dropdownbtn.Name = "dropdownbtn"
+			dropdownbtn.Parent = dropdown
+			dropdownbtn.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+			dropdownbtn.BorderSizePixel = 0
+			dropdownbtn.Size = UDim2.new(0, 200, 0, 30)
+			dropdownbtn.AutoButtonColor = false
+			dropdownbtn.Text = ""
 			
 			local title_label = Instance.new("TextLabel")
 			title_label.Name = "title"
-			title_label.Parent = dropdown
+			title_label.Parent = dropdownbtn
 			title_label.BackgroundTransparency = 1
 			title_label.Position = UDim2.new(0, 8, 0, 0)
 			title_label.Size = UDim2.new(0, 23, 1, 0)
@@ -393,7 +405,7 @@ function lib:Window(text)
 			
 			local arrow = Instance.new("ImageButton")
 			arrow.Name = "arrow"
-			arrow.Parent = dropdown
+			arrow.Parent = dropdownbtn
 			arrow.BackgroundTransparency = 1
 			arrow.Position = UDim2.new(0.87, 0, 0.167, 0)
 			arrow.Size = UDim2.new(0, 20, 0, 20)
@@ -410,40 +422,47 @@ function lib:Window(text)
 			dropdowncontainer.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
 			dropdowncontainer.BorderSizePixel = 0
 			dropdowncontainer.Position = UDim2.new(0, 0, 1, 0)
-			dropdowncontainer.Size = UDim2.new(0, 146, 0, 0)
+			dropdowncontainer.Size = UDim2.new(0, 200, 0, 0)
 			dropdowncontainer.BottomImage = "rbxasset://textures/ui/Scroll/scroll-middle.png"
 			dropdowncontainer.CanvasSize = UDim2.new(0, 0, 0, 0)
 			dropdowncontainer.ScrollBarThickness = 3
 			dropdowncontainer.ScrollBarImageColor3 = Color3.fromRGB(220, 20, 60)
 			dropdowncontainer.Visible = false
 			dropdowncontainer.TopImage = "rbxasset://textures/ui/Scroll/scroll-middle.png"
+			dropdowncontainer.ZIndex = 10
 			
 			local dropdownlist = Instance.new("UIListLayout")
 			dropdownlist.Parent = dropdowncontainer
 			
-			local t = TweenService:Create(dropdown, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {BackgroundColor3 = Color3.fromRGB(15, 15, 15)})
-			local nt = TweenService:Create(dropdown, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {BackgroundColor3 = Color3.fromRGB(0, 0, 0)})
+			local t = TweenService:Create(dropdownbtn, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {BackgroundColor3 = Color3.fromRGB(15, 15, 15)})
+			local nt = TweenService:Create(dropdownbtn, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {BackgroundColor3 = Color3.fromRGB(0, 0, 0)})
 			local closetween = TweenService:Create(arrow, TweenInfo.new(0.5, Enum.EasingStyle.Quad), {Rotation = 90})
 			local opentween = TweenService:Create(arrow, TweenInfo.new(0.5, Enum.EasingStyle.Quad), {Rotation = 0})
 			
-			dropdown.MouseButton1Click:Connect(function()
+			local function toggleDropdown()
 				if not d then
 					d = true
 					opentween:Play()
 					dropdowncontainer.Visible = true
 					t:Play()
-					dropdowncontainer:TweenSize(UDim2.new(0, 146, 0, 92), "In", "Quad", 0.25)
-					container.CanvasSize = UDim2.new(0, 0, 0, containerlist.AbsoluteContentSize.Y + 105)
+					dropdowncontainer:TweenSize(UDim2.new(0, 200, 0, math.min(#list * 27, 108)), "In", "Quad", 0.25)
+					local newCanvasSize = containerlist.AbsoluteContentSize.Y + math.min(#list * 27, 108) + 10
+					container.CanvasSize = UDim2.new(0, 0, 0, newCanvasSize)
 				else
 					d = false
 					closetween:Play()
 					nt:Play()
-					dropdowncontainer:TweenSize(UDim2.new(0, 146, 0, 0), "Out", "Quad", 0.25)
+					dropdowncontainer:TweenSize(UDim2.new(0, 200, 0, 0), "Out", "Quad", 0.25)
 					container.CanvasSize = UDim2.new(0, 0, 0, containerlist.AbsoluteContentSize.Y + 10)
-					wait(0.3)
-					dropdowncontainer.Visible = false
+					spawn(function()
+						wait(0.3)
+						dropdowncontainer.Visible = false
+					end)
 				end
-			end)
+			end
+			
+			dropdownbtn.MouseButton1Click:Connect(toggleDropdown)
+			arrow.MouseButton1Click:Connect(toggleDropdown)
 			
 			for _, v in pairs(list) do
 				local option = Instance.new("TextButton")
@@ -451,12 +470,13 @@ function lib:Window(text)
 				option.Parent = dropdowncontainer
 				option.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
 				option.BorderSizePixel = 0
-				option.Size = UDim2.new(0, 146, 0, 27)
+				option.Size = UDim2.new(0, 200, 0, 27)
 				option.AutoButtonColor = false
 				option.Font = Enum.Font.Gotham
 				option.TextColor3 = Color3.fromRGB(255, 255, 255)
 				option.TextSize = 14
 				option.Text = v
+				option.ZIndex = 11
 				
 				local me = TweenService:Create(option, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {BackgroundColor3 = Color3.fromRGB(220, 20, 60)})
 				local ml = TweenService:Create(option, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {BackgroundColor3 = Color3.fromRGB(15, 15, 15)})
@@ -468,16 +488,17 @@ function lib:Window(text)
 					d = false
 					closetween:Play()
 					nt:Play()
-					dropdowncontainer:TweenSize(UDim2.new(0, 146, 0, 0), "Out", "Quad", 0.25)
+					dropdowncontainer:TweenSize(UDim2.new(0, 200, 0, 0), "Out", "Quad", 0.25)
 					container.CanvasSize = UDim2.new(0, 0, 0, containerlist.AbsoluteContentSize.Y + 10)
-					wait(0.3)
-					dropdowncontainer.Visible = false
+					spawn(function()
+						wait(0.3)
+						dropdowncontainer.Visible = false
+					end)
 					callback(v)
 				end)
-				
-				dropdowncontainer.CanvasSize = UDim2.new(0, 0, 0, dropdownlist.AbsoluteContentSize.Y)
 			end
 			
+			dropdowncontainer.CanvasSize = UDim2.new(0, 0, 0, dropdownlist.AbsoluteContentSize.Y)
 			container.CanvasSize = UDim2.new(0, 0, 0, containerlist.AbsoluteContentSize.Y + 10)
 		end
 		
