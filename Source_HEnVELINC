@@ -1,4 +1,4 @@
--- UI Library with Black & Red Theme (Fixed Version)
+-- UI Library Credits > Rodgie< (^_^)
 local TweenService = game:GetService("TweenService")
 local UIS = game:GetService("UserInputService")
 local Players = game:GetService("Players")
